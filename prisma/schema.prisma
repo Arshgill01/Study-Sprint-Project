@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  decks     Deck[]
+}
+
+model Deck {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cards     Card[]
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model Card {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  type      String   // "qa" or "cloze"
+  source    String?  // for text snippets
+  deck      Deck     @relation(fields: [deckId], references: [id])
+  deckId    String
+  reviews   ReviewLog[]
+}
+
+model ReviewLog {
+  id        String   @id @default(cuid())
+  card      Card     @relation(fields: [cardId], references: [id])
+  cardId    String
+  reviewedAt DateTime @default(now())
+  result    String   // "hard" | "okay" | "got"
+  interval  Int      // in minutes
+  nextDue   DateTime
+}
